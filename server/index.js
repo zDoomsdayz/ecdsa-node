@@ -1,3 +1,7 @@
+const { keccak256 } = require("ethereum-cryptography/keccak");
+const { utf8ToBytes } = require("ethereum-cryptography/utils");
+const secp = require("ethereum-cryptography/secp256k1");
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -19,7 +23,24 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  const { sender, recipient, amount } = req.body;
+  const { sender, recipient, amount, signature } = req.body;
+
+  //convert signature back to BigInt object
+  const bigSignature = JSON.parse(signature, (key, value) => {
+    if (typeof value === 'string') {
+      return BigInt(value);
+    }
+    return value;
+  });
+
+  //server uses public address as hash message
+  const messageHash = keccak256(utf8ToBytes(sender));
+  const isSigned = secp.secp256k1.verify({r:bigSignature.r, s:bigSignature.s}, messageHash, sender);
+
+  if (!isSigned) {
+    res.status(400).send({ message: "Signature is not verified!" });
+    return;
+  }
 
   setInitialBalance(sender);
   setInitialBalance(recipient);

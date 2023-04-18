@@ -28,11 +28,11 @@ function Wallet({ address, setAddress, balance, setBalance, privateKey, setPriva
         <input placeholder="Type in a private key" value={privateKey} onChange={onChange}></input>
       </label>
 
-      <div>
-        Address: {address.slice(0,10)}...
+      <div className="balance">
+        Address: {address.slice(0, 20)}...
       </div>
 
-      <div className="balance">Balance: {balance}</div>
+      <div className="balance">Balance:{ balance }</div>
     </div>
   );
 }
